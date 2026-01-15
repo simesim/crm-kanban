@@ -5,6 +5,7 @@ app = FastAPI(title="CRM Kanban")
 
 app.include_router(api_router, prefix="/api")
 
-@app.get("/health")
-def health():
+
+@app.get("/ping")
+def ping():
     return {"status": "ok"}
