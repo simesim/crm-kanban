@@ -11,4 +11,6 @@ class BoardOut(BaseModel):
     title: str
     owner_id: int
     created_at: datetime
-""" ыфыф """
+
+class BoardMemberAdd(BaseModel):
+    user_id: int
