@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
+
 import { prisma } from "../db/prisma.js";
 
 function addDays(date, days) {

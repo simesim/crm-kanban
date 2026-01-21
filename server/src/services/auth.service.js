@@ -1,4 +1,5 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
+
 import { prisma } from "../db/prisma.js";
 import { ApiError } from "../utils/api-error.js";
 import { signAccessToken, issueRefreshToken, rotateRefreshToken, revokeAllRefreshTokens } from "./token.service.js";
