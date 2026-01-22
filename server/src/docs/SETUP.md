@@ -1,6 +1,6 @@
-\# Настройка проекта
+# Настройка проекта
 
-\## Требования
+## Требования
 
 \- Node.js 18+
 
@@ -8,17 +8,15 @@
 
 \- PostgreSQL (через Docker)
 
-\## Установка
+## Установка
 
-1\. \*\*Клонирование и установка зависимостей\*\*
-
-\`\`\`bash
+1\. **Клонирование и установка зависимостей**
 
 npm install
 
 1.  **Настройка переменных окружения**
 
-bash
+
 
 cp .env.example .env
 
@@ -26,25 +24,23 @@ cp .env.example .env
 
 1.  **Запуск базы данных**
 
-bash
 
 docker-compose up -d
 
 1.  **Применение миграций Prisma**
 
-bash
 
 npx prisma migrate dev --name init
 
 1.  **Генерация Prisma клиента**
 
-bash
+
 
 npx prisma generate
 
 1.  **Запуск сервера**
 
-bash
+
 
 _\# Development режим_
 
@@ -60,7 +56,6 @@ npm start
 
 1.  **Проверка здоровья API**
 
-bash
 
 curl http://localhost:3000/health
 
@@ -68,7 +63,6 @@ curl http://localhost:3000/health
 
 1.  **Проверка базы данных**
 
-bash
 
 _\# Подключение к PostgreSQL_
 
@@ -78,13 +72,11 @@ docker exec -it crm_kanban_db psql -U postgres -d crm_kanban
 
 **Создание тестовых пользователей через Prisma Studio**
 
-bash
 
 npx prisma studio
 
 Или через миграцию:
 
-sql
 
 INSERT INTO "User" (id, email, "passwordHash", role)
 
@@ -137,7 +129,3 @@ PORT="3000"
 - Comment - Комментарии к карточкам
 
 Просмотр схемы: prisma/schema.prisma
-
-text
-
-\---
