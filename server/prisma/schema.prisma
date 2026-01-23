@@ -13,31 +13,28 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  role         Role     @default(MANAGER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  // auth
-  refreshTokens RefreshToken[]
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
 
   // kanban relations
-  ownedBoards   Board[]        @relation("BoardOwner")
-  boardMembers  BoardMember[]
-  createdCards  Card[]         @relation("CardCreator")
-  comments      Comment[]
+  ownedBoards  Board[]       @relation("BoardOwner")
+  boardMembers BoardMember[]
+  cards        Card[]
 
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  comments      Comment[]
+  refreshTokens RefreshToken[]
 }
 
 model RefreshToken {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
-  tokenHash String   @unique
+  tokenHash String    @unique
   expiresAt DateTime
   revokedAt DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -46,68 +43,71 @@ model RefreshToken {
 }
 
 model Board {
-  id        String   @id @default(cuid())
-  title     String
-  ownerId   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id    String @id @default(cuid())
+  title String
 
-  owner   User @relation("BoardOwner", fields: [ownerId], references: [id])
+  ownerId String
+  owner   User   @relation("BoardOwner", fields: [ownerId], references: [id])
 
   members BoardMember[]
   columns Column[]
   cards   Card[]
 
-  @@index([ownerId])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model BoardMember {
-  id      String @id @default(cuid())
+  id String @id @default(cuid())
+
   boardId String
   userId  String
 
   board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  role Role
+
   @@unique([boardId, userId])
-  @@index([userId])
+}
+
+enum BoardRole {
+  MANAGER
+  LEAD
 }
 
 model Column {
-  id        String   @id @default(cuid())
-  title     String
-  position  Int
-  boardId   String
+  id    String @id @default(cuid())
+  title String
+  order Int
+
+  boardId String
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  cards Card[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  cards Card[]
-
-  @@index([boardId])
-  @@unique([boardId, position])
+  @@unique([boardId, order])
 }
 
 model Card {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  position    Int
-  boardId     String
-  columnId    String
-  createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id    String @id @default(cuid())
+  title String
+  order Int
 
-  board     Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  column    Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  createdBy User @relation("CardCreator", fields: [createdById], references: [id])
+  boardId  String
+  columnId String
+  userId   String?
 
+  board  Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  column Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   comments  Comment[]
-
-  @@index([boardId])
-  @@index([columnId])
-  @@unique([columnId, position])
 }
 
 model Comment {

@@ -7,6 +7,9 @@ import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 dotenv.config();
 
+console.log("JWT_ACCESS_SECRET:", process.env.JWT_ACCESS_SECRET);
+console.log("ACCESS_TOKEN_EXPIRES_IN:", process.env.ACCESS_TOKEN_EXPIRES_IN);
+
 export function createApp() {
   const app = express();
 
