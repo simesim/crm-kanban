@@ -93,9 +93,21 @@ model Column {
 }
 
 model Card {
-  id    String @id @default(cuid())
-  title String
-  order Int
+  id          String  @id @default(cuid())
+  title       String
+  description String?
+
+  // CRM fields
+  phone           String?
+  email           String?
+  age             Int?
+  course          String?
+  source          String?
+  timePreferences Json?
+  tags            Json?
+  checklist       Json?
+
+  order       Int
 
   boardId  String
   columnId String
@@ -108,7 +120,10 @@ model Card {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   comments  Comment[]
+
+  @@unique([columnId, order])
 }
+
 
 model Comment {
   id        String   @id @default(cuid())

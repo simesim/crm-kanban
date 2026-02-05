@@ -11,6 +11,16 @@ export const cardsController = {
     }
   },
 
+  async getById(req, res, next) {
+    try {
+      const { id } = req.params;
+      const card = await cardsService.getCardById(id);
+      res.json(card);
+    } catch (e) {
+      next(e);
+    }
+  },
+
   async createCard(req, res, next) {
     try {
       const { columnId } = req.params;

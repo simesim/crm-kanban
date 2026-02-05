@@ -45,6 +45,21 @@ export const boardsService = {
     });
   },
 
+
+  async getBoardKanban(boardId) {
+    return prisma.board.findUnique({
+      where: { id: boardId },
+      include: {
+        columns: {
+          orderBy: { order: "asc" },
+          include: {
+            cards: { orderBy: { order: "asc" } },
+          },
+        },
+      },
+    });
+  },
+
   async addMember({ boardId, userIdToAdd }) {
 
     const user = await prisma.user.findUnique({
