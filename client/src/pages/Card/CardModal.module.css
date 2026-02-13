@@ -1,0 +1,170 @@
+/* src/pages/Card/CardModal.module.css */
+.loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+}
+
+.cardModal {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.section h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.infoRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-size: 12px;
+  color: #666;
+}
+
+.value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status.new {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.status.call {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.status.payment {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+
+.status.studying {
+  background: #e8eaf6;
+  color: #3f51b5;
+}
+
+.details {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailItem span {
+  font-size: 12px;
+  color: #666;
+}
+
+.detailItem strong {
+  font-size: 14px;
+  color: #333;
+}
+
+.comments {
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.comment {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.commentHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.commentAuthor {
+  font-weight: 500;
+  color: #333;
+}
+
+.commentDate {
+  font-size: 11px;
+  color: #999;
+}
+
+.commentText {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.noComments {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+  font-size: 14px;
+}
+
+.addComment {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+@media (max-width: 768px) {
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .details {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

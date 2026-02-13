@@ -1,21 +1,21 @@
 .loaderContainer {
-  display: flex;
+  display: inline-flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  padding: 20px;
 }
 
 .loader {
   border: 3px solid #f3f3f3;
   border-radius: 50%;
   border-top: 3px solid #007bff;
+  border-left: 3px solid #007bff;
   animation: spin 1s linear infinite;
 }
 
 .small {
   width: 20px;
   height: 20px;
+  border-width: 2px;
 }
 
 .medium {

@@ -4,14 +4,10 @@ import styles from './Layout.module.css';
 const Layout = ({ children, headerContent, sidebarContent }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
-
   return (
     <div className={styles.layout}>
       <header className={styles.header}>
-        <button className={styles.menuButton} onClick={toggleSidebar}>
+        <button className={styles.menuButton} onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           ☰
         </button>
         <div className={styles.headerContent}>
@@ -34,4 +30,4 @@ const Layout = ({ children, headerContent, sidebarContent }) => {
   );
 };
 
-export default Layout;
+export default Layout; // ВАЖНО: default export!

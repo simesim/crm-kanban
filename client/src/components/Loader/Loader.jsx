@@ -6,7 +6,7 @@ const Loader = ({ size = 'medium', color = '#007bff' }) => {
     <div className={styles.loaderContainer}>
       <div 
         className={`${styles.loader} ${styles[size]}`}
-        style={{ borderTopColor: color }}
+        style={{ borderTopColor: color, borderLeftColor: color }}
       />
     </div>
   );
