@@ -1,11 +1,11 @@
 ﻿{
   "info": {
-    "name": "CRM Kanban API - FULL",
+    "name": "CRM Kanban API",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "00 - Health",
+      "name": "Health",
       "item": [
         {
           "name": "GET health",
@@ -17,50 +17,10 @@
       ]
     },
     {
-      "name": "01 - Auth",
+      "name": "Auth",
       "item": [
         {
-          "name": "POST register LEAD",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"lead@test.com\",\n  \"password\": \"lead123\",\n  \"role\": \"LEAD\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
-          }
-        },
-        {
-          "name": "POST register MANAGER",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "try {",
-                  "  const json = pm.response.json();",
-                  "  if (json && (json.id || json.userId)) {",
-                  "    pm.environment.set('managerUserId', json.id || json.userId);",
-                  "  }",
-                  "} catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"manager@test.com\",\n  \"password\": \"manager123\",\n  \"role\": \"MANAGER\"\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] }
-          }
-        },
-        {
-          "name": "POST login (stores accessToken)",
+          "name": "POST login",
           "event": [
             {
               "listen": "test",
@@ -68,8 +28,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "const json = pm.response.json();",
-                  "if (json && json.accessToken) pm.environment.set('accessToken', json.accessToken);",
-                  "if (json && json.user && json.user.id) pm.environment.set('userId', json.user.id);"
+                  "if (json && json.accessToken) pm.environment.set('accessToken', json.accessToken);"
                 ]
               }
             }
@@ -79,43 +38,15 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"lead@test.com\",\n  \"password\": \"lead123\"\n}"
+              "raw": "{\n  \"email\": \"lead@test.com\",\n  \"password\": \"123456\"\n}"
             },
             "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] }
-          }
-        },
-        {
-          "name": "POST refresh (uses cookie, updates accessToken if returned)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "try {",
-                  "  const json = pm.response.json();",
-                  "  if (json && json.accessToken) pm.environment.set('accessToken', json.accessToken);",
-                  "} catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] }
-          }
-        },
-        {
-          "name": "POST logout",
-          "request": {
-            "method": "POST",
-            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
           }
         }
       ]
     },
     {
-      "name": "02 - Boards",
+      "name": "Boards",
       "item": [
         {
           "name": "GET boards (list)",
@@ -126,7 +57,7 @@
           }
         },
         {
-          "name": "POST boards (create) (stores boardId)",
+          "name": "POST boards (create)",
           "event": [
             {
               "listen": "test",
@@ -156,193 +87,13 @@
           }
         },
         {
-          "name": "POST add member (LEAD) (uses managerUserId)",
+          "name": "POST add member",
           "request": {
             "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": { "mode": "raw", "raw": "{\n  \"userId\": \"{{managerUserId}}\"\n}" },
             "url": { "raw": "{{baseUrl}}/boards/{{boardId}}/members", "host": ["{{baseUrl}}"], "path": ["boards", "{{boardId}}", "members"] }
-          }
-        },
-        {
-          "name": "GET board kanban view (board + columns + cards)",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/boards/{{boardId}}", "host": ["{{baseUrl}}"], "path": ["boards", "{{boardId}}"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "03 - Columns",
-      "item": [
-        {
-          "name": "POST create column (stores columnId)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const json = pm.response.json();",
-                  "if (json && json.id) pm.environment.set('columnId', json.id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Новые\"\n}" },
-            "url": { "raw": "{{baseUrl}}/boards/{{boardId}}/columns", "host": ["{{baseUrl}}"], "path": ["boards", "{{boardId}}", "columns"] }
-          }
-        },
-        {
-          "name": "PATCH update column title",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"title\": \"В работе\"\n}" },
-            "url": { "raw": "{{baseUrl}}/columns/{{columnId}}", "host": ["{{baseUrl}}"], "path": ["columns", "{{columnId}}"] }
-          }
-        },
-        {
-          "name": "PATCH reorder columns",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"columns\": [\n    { \"id\": \"{{columnId}}\", \"order\": 1 }\n  ]\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/boards/{{boardId}}/columns/reorder", "host": ["{{baseUrl}}"], "path": ["boards", "{{boardId}}", "columns", "reorder"] }
-          }
-        },
-        {
-          "name": "DELETE column",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/columns/{{columnId}}", "host": ["{{baseUrl}}"], "path": ["columns", "{{columnId}}"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "04 - Cards (CRM fields + move)",
-      "item": [
-        {
-          "name": "POST create card in column (stores cardId)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const json = pm.response.json();",
-                  "if (json && json.id) pm.environment.set('cardId', json.id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Заявка #1\",\n  \"description\": \"Клиент попросил перезвонить\",\n  \"phone\": \"+79990001122\",\n  \"email\": \"client@example.com\",\n  \"age\": 17,\n  \"course\": \"Python\",\n  \"source\": \"Instagram\",\n  \"timePreferences\": {\"days\": [\"Mon\",\"Wed\"], \"time\": \"18:00-20:00\"},\n  \"tags\": [\"горячий\", \"пробный\"],\n  \"checklist\": [{\"t\":\"Созвон\", \"done\": false}]\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/columns/{{columnId}}/cards", "host": ["{{baseUrl}}"], "path": ["columns", "{{columnId}}", "cards"] }
-          }
-        },
-        {
-          "name": "GET card by id",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/cards/{{cardId}}", "host": ["{{baseUrl}}"], "path": ["cards", "{{cardId}}"] }
-          }
-        },
-        {
-          "name": "PATCH update card (CRM fields)",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"description\": \"Перезвонить завтра\",\n  \"tags\": [\"горячий\", \"договорились\"],\n  \"checklist\": [{\"t\":\"Созвон\", \"done\": true}, {\"t\":\"Оплата\", \"done\": false}]\n}"
-            },
-            "url": { "raw": "{{baseUrl}}/cards/{{cardId}}", "host": ["{{baseUrl}}"], "path": ["cards", "{{cardId}}"] }
-          }
-        },
-        {
-          "name": "PATCH move card (to same column position 1)",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"toColumnId\": \"{{columnId}}\",\n  \"toOrder\": 1\n}" },
-            "url": { "raw": "{{baseUrl}}/cards/{{cardId}}/move", "host": ["{{baseUrl}}"], "path": ["cards", "{{cardId}}", "move"] }
-          }
-        },
-        {
-          "name": "DELETE card",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/cards/{{cardId}}", "host": ["{{baseUrl}}"], "path": ["cards", "{{cardId}}"] }
-          }
-        }
-      ]
-    },
-    {
-      "name": "05 - Comments",
-      "item": [
-        {
-          "name": "GET comments by card",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/cards/{{cardId}}/comments", "host": ["{{baseUrl}}"], "path": ["cards", "{{cardId}}", "comments"] }
-          }
-        },
-        {
-          "name": "POST create comment (stores commentId if returned)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "try {",
-                  "  const json = pm.response.json();",
-                  "  if (json && json.id) pm.environment.set('commentId', json.id);",
-                  "} catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"body\": \"Ок, записал на пробное\"\n}" },
-            "url": { "raw": "{{baseUrl}}/cards/{{cardId}}/comments", "host": ["{{baseUrl}}"], "path": ["cards", "{{cardId}}", "comments"] }
-          }
-        },
-        {
-          "name": "DELETE comment (author or LEAD)",
-          "request": {
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
-            "method": "DELETE",
-            "url": { "raw": "{{baseUrl}}/comments/{{commentId}}", "host": ["{{baseUrl}}"], "path": ["comments", "{{commentId}}"] }
           }
         }
       ]

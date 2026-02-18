@@ -1,70 +1,67 @@
-# Getting Started with Create React App
+# CRM Kanban Client (React)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is a **working** client for your CRM + Kanban board (Trello-like):
+- login (MANAGER / LEAD)
+- boards list + create board (LEAD)
+- board view: columns + cards, drag & drop (sync via REST)
+- card modal: full card fields + comments
 
-## Available Scripts
+Day 10 additions:
+- column reorder (drag columns) for LEAD
+- role-based UI (MANAGER doesn't see LEAD-only actions)
+- search inside board (drag disabled while searching)
+- LEAD can add board member by userId
 
-In the project directory, you can run:
+## 1) Requirements
+- Node.js 18+ (recommended)
+- Running backend on **http://localhost:3000** (your Postman env uses `http://localhost:3000/api/v1`)
 
-### `npm start`
+## 2) Configure
+Copy `.env.example` to `.env` if needed.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Main var:
+- `REACT_APP_API_URL=http://localhost:3000/api/v1`
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 3) Install & run
+```bash
+cd client
+npm i
+npm start
+```
+The UI will open on: http://localhost:3001
 
-### `npm test`
+## 3.1) How to get a userId for "Add member"
+Open Prisma Studio:
+```bash
+cd server
+npx prisma studio
+```
+Find `User` table and copy the `id`.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 4) Quick check (backend)
+From your Postman:
+- `GET {{baseUrl}}/health`
+- `POST {{baseUrl}}/auth/login`
 
-### `npm run build`
+If Postman works, UI login should work too.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 5) If some endpoints differ on your server
+This client assumes these endpoints (baseUrl already includes `/api/v1`):
+- `POST /auth/login`
+- `POST /auth/refresh`
+- `POST /auth/logout`
+- `GET /boards`
+- `POST /boards`
+- `GET /boards/:id`
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Columns/Cards/Comments endpoints are **centralized** here:
+- `src/service/columns.js`
+- `src/service/cards.js`
+- `src/service/comments.js`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+If your server uses another URL shape, update only these files.
 
-### `npm run eject`
+## 6) Demo credentials
+From your Postman collection:
+- `lead@test.com / 123456`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

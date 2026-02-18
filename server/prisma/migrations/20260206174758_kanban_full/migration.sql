@@ -14,8 +14,6 @@
   - Added the required column `password` to the `User` table without a default value. This is not possible if the table is not empty.
 
 */
--- CreateEnum
-CREATE TYPE "BoardRole" AS ENUM ('MANAGER', 'LEAD');
 
 -- DropForeignKey
 ALTER TABLE "Card" DROP CONSTRAINT "Card_createdById_fkey";
@@ -42,30 +40,41 @@ DROP INDEX "Column_boardId_idx";
 DROP INDEX "Column_boardId_position_key";
 
 -- AlterTable
-ALTER TABLE "BoardMember" ADD COLUMN     "role" "Role" NOT NULL;
+-- Add required role safely (works even if BoardMember already has rows)
+ALTER TABLE "BoardMember" ADD COLUMN     "role" "Role" NOT NULL DEFAULT 'MANAGER';
 
 -- AlterTable
-ALTER TABLE "Card" DROP COLUMN "createdById",
-DROP COLUMN "position",
+-- Add "order" safely by copying from old "position"
+ALTER TABLE "Card"
 ADD COLUMN     "age" INTEGER,
 ADD COLUMN     "checklist" JSONB,
 ADD COLUMN     "course" TEXT,
 ADD COLUMN     "email" TEXT,
-ADD COLUMN     "order" INTEGER NOT NULL,
+ADD COLUMN     "order" INTEGER,
 ADD COLUMN     "phone" TEXT,
 ADD COLUMN     "source" TEXT,
 ADD COLUMN     "tags" JSONB,
 ADD COLUMN     "timePreferences" JSONB,
 ADD COLUMN     "userId" TEXT;
 
--- AlterTable
-ALTER TABLE "Column" DROP COLUMN "position",
-ADD COLUMN     "order" INTEGER NOT NULL;
+UPDATE "Card" SET "order" = "position" WHERE "order" IS NULL;
+
+ALTER TABLE "Card" ALTER COLUMN "order" SET NOT NULL;
+
+ALTER TABLE "Card" DROP COLUMN "createdById",
+DROP COLUMN "position";
 
 -- AlterTable
-ALTER TABLE "User" DROP COLUMN "passwordHash",
-DROP COLUMN "role",
-ADD COLUMN     "password" TEXT NOT NULL;
+-- Add "order" safely by copying from old "position"
+ALTER TABLE "Column" ADD COLUMN     "order" INTEGER;
+
+UPDATE "Column" SET "order" = "position" WHERE "order" IS NULL;
+
+ALTER TABLE "Column" ALTER COLUMN "order" SET NOT NULL;
+
+ALTER TABLE "Column" DROP COLUMN "position";
+
+-- User table already has passwordHash + role (keep existing data)
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Card_columnId_order_key" ON "Card"("columnId", "order");

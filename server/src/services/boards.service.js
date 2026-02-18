@@ -61,10 +61,9 @@ export const boardsService = {
   },
 
   async addMember({ boardId, userIdToAdd }) {
-
     const user = await prisma.user.findUnique({
       where: { id: userIdToAdd },
-      select: { id: true },
+      select: { id: true, role: true },
     });
     if (!user) throw ApiError.badRequest("User to add not found");
 
@@ -79,6 +78,8 @@ export const boardsService = {
       create: {
         boardId,
         userId: userIdToAdd,
+        // Keep BoardMember.role aligned with account role
+        role: user.role,
       },
     });
   },
