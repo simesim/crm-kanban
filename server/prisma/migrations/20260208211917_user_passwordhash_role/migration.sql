@@ -1,11 +1,8 @@
 /*
-  Warnings:
-
-  - You are about to drop the column `password` on the `User` table. All the data in the column will be lost.
-  - Added the required column `passwordHash` to the `User` table without a default value. This is not possible if the table is not empty.
-
+  This migration became obsolete.
+  Current schema already uses "passwordHash" and "role".
+  We keep this file only to preserve migration history.
 */
--- AlterTable
-ALTER TABLE "User" DROP COLUMN "password",
-ADD COLUMN     "passwordHash" TEXT NOT NULL,
-ADD COLUMN     "role" "Role" NOT NULL DEFAULT 'MANAGER';
+
+-- Make it safe for fresh databases and shadow database
+ALTER TABLE "User" DROP COLUMN IF EXISTS "password";
