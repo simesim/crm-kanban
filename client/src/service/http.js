@@ -15,7 +15,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Prevent infinite loops, handle parallel 401 correctly
 let isRefreshing = false;
 let waiters = [];
 
@@ -37,7 +36,6 @@ api.interceptors.response.use(
     if (!original || original._retry) throw error;
     if (error.response?.status !== 401) throw error;
 
-    // don't try to refresh if the refresh endpoint itself failed
     if (original.url?.includes("/auth/refresh")) {
       clearStoredAuth();
       throw error;

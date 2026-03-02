@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { getBoardApi } from "../../service/boards";
 import { normalizeBoardPayload } from "../../utils/normalizeBoard";
-import { createColumnApi, deleteColumnApi, updateColumnApi, reorderColumnsApi } from "../../service/columns";
+import { createColumnApi, deleteColumnApi, reorderColumnsApi, updateColumnApi } from "../../service/columns";
 import { createCardApi, deleteCardApi, getCardApi, moveCardApi, updateCardApi } from "../../service/cards";
 import { createCommentApi, deleteCommentApi, listCommentsApi } from "../../service/comments";
 
@@ -101,7 +101,6 @@ export const moveCardThunk = createAsyncThunk(
 export const fetchCardDetailsThunk = createAsyncThunk("kanban/cardDetails", async (id, { rejectWithValue }) => {
   try {
     const card = await getCardApi(id);
-    // some servers don't include comments in card response
     const comments = await listCommentsApi(id);
     return { card, comments };
   } catch (e) {
@@ -114,7 +113,11 @@ export const addCommentThunk = createAsyncThunk(
   async ({ cardId, body, currentUser }, { rejectWithValue }) => {
     try {
       const c = await createCommentApi(cardId, body);
-      return { ...c, author: c.author || { id: currentUser?.id, email: currentUser?.email }, authorId: c.authorId || currentUser?.id };
+      return {
+        ...c,
+        author: c.author || { id: currentUser?.id, email: currentUser?.email },
+        authorId: c.authorId || currentUser?.id,
+      };
     } catch (e) {
       return rejectWithValue(errMsg(e));
     }
@@ -160,7 +163,7 @@ const slice = createSlice({
     },
     moveCardLocal(state, action) {
       const { cardId, fromColumnId, toColumnId, toIndex } = action.payload;
-      // move within same column (reorder)
+
       if (fromColumnId === toColumnId) {
         const arr = [...(state.cardsByColumn[fromColumnId] || [])];
         const idx = arr.findIndex((c) => c.id === cardId);
@@ -174,7 +177,6 @@ const slice = createSlice({
         return;
       }
 
-      // move across columns
       const from = [...(state.cardsByColumn[fromColumnId] || [])];
       const to = [...(state.cardsByColumn[toColumnId] || [])];
 
@@ -199,7 +201,6 @@ const slice = createSlice({
       if (toIndex < 0 || toIndex >= cols.length) return;
       const [moved] = cols.splice(fromIndex, 1);
       cols.splice(toIndex, 0, moved);
-      // keep stable "order" for UI (server will persist)
       state.columns = cols.map((c, i) => ({ ...c, order: i + 1 }));
     },
     updateCardInBoard(state, action) {
@@ -247,7 +248,6 @@ const slice = createSlice({
     b.addCase(createCardThunk.fulfilled, (s, a) => {
       const colId = a.payload.columnId;
       const arr = s.cardsByColumn[colId] || [];
-      // server assigns order at the end, keep UI in order
       s.cardsByColumn[colId] = [...arr, a.payload].sort((x, y) => (x.order ?? 0) - (y.order ?? 0));
     });
 

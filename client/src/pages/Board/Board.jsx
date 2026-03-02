@@ -9,10 +9,10 @@ import {
   updateColumnThunk,
   deleteColumnThunk,
   reorderColumnsThunk,
+  reorderColumnsLocal,
   createCardThunk,
   moveCardLocal,
   moveCardThunk,
-  reorderColumnsLocal,
   openCard,
   closeCard,
 } from "../../store/kanban/slice";
@@ -29,8 +29,10 @@ import {
 import { selectRole } from "../../store/auth/selectors";
 import { addBoardMemberApi } from "../../service/boards";
 import Spinner from "../../components/UI/Spinner";
-import CardModal from "../Card/CardModal";
+import Button from "../../components/UI/Button";
+import Input from "../../components/UI/Input";
 import { toast } from "../../utils/toastBus";
+import CardModal from "../Card/CardModal";
 
 function matchesCard(card, qRaw) {
   const q = (qRaw || "").trim().toLowerCase();
@@ -74,6 +76,8 @@ export default function Board() {
     dispatch(fetchBoardThunk(boardId));
   }, [dispatch, boardId]);
 
+  const header = useMemo(() => (board ? board.title : "Доска"), [board]);
+
   const onAddColumn = async () => {
     if (!isLead) return;
     const t = newColTitle.trim();
@@ -81,9 +85,9 @@ export default function Board() {
     const res = await dispatch(createColumnThunk({ boardId, title: t }));
     if (res.meta.requestStatus === "fulfilled") {
       setNewColTitle("");
-      toast("Column added", "ok");
+      toast("Колонка добавлена", "ok");
     } else {
-      toast(res.payload || "Failed to add column", "error");
+      toast(res.payload || "Не удалось добавить колонку", "error");
     }
   };
 
@@ -95,39 +99,37 @@ export default function Board() {
     setAddingMember(true);
     try {
       await addBoardMemberApi(boardId, id);
-      toast("Member added", "ok");
+      toast("Участник добавлен", "ok");
       setMemberUserId("");
     } catch (e) {
-      toast(e?.response?.data?.message || e?.message || "Failed to add member", "error");
+      toast(e?.response?.data?.message || e?.message || "Не удалось добавить участника", "error");
     } finally {
       setAddingMember(false);
     }
   };
 
+  const moveColumnByButtons = async (fromIndex, toIndex) => {
+    if (!isLead) return;
+    if (toIndex < 0 || toIndex >= columns.length) return;
+
+    const next = [...columns];
+    const [moved] = next.splice(fromIndex, 1);
+    next.splice(toIndex, 0, moved);
+
+    dispatch(reorderColumnsLocal({ fromIndex, toIndex }));
+
+    const res = await dispatch(reorderColumnsThunk({ boardId, orderedIds: next.map((c) => c.id) }));
+    if (res.meta.requestStatus !== "fulfilled") {
+      toast(res.payload || "Не удалось сохранить порядок (перезагрузка)", "error");
+      dispatch(fetchBoardThunk(boardId));
+    }
+  };
+
   const onDragEnd = async (result) => {
-    const { destination, source, draggableId, type } = result;
+    const { destination, source, draggableId } = result;
     if (!destination) return;
     if (destination.droppableId === source.droppableId && destination.index === source.index) return;
 
-    // Column reorder (LEAD)
-    if (type === "COLUMN") {
-      if (!isLead) return;
-
-      const next = [...(columns || [])];
-      const [moved] = next.splice(source.index, 1);
-      next.splice(destination.index, 0, moved);
-
-      dispatch(reorderColumnsLocal({ fromIndex: source.index, toIndex: destination.index }));
-
-      const res = await dispatch(reorderColumnsThunk({ boardId, orderedIds: next.map((c) => c.id) }));
-      if (res.meta.requestStatus !== "fulfilled") {
-        toast(res.payload || "Reorder failed (reloading board)", "error");
-        dispatch(fetchBoardThunk(boardId));
-      }
-      return;
-    }
-
-    // Card move
     dispatch(
       moveCardLocal({
         cardId: draggableId,
@@ -137,122 +139,95 @@ export default function Board() {
       })
     );
 
-    const res = await dispatch(
-      moveCardThunk({
-        id: draggableId,
-        toColumnId: destination.droppableId,
-        toIndex: destination.index,
-      })
-    );
-
+    const res = await dispatch(moveCardThunk({ id: draggableId, toColumnId: destination.droppableId, toIndex: destination.index }));
     if (res.meta.requestStatus !== "fulfilled") {
-      toast(res.payload || "Move failed (reloading board)", "error");
+      toast(res.payload || "Перенос не сохранился (перезагрузка)", "error");
       dispatch(fetchBoardThunk(boardId));
     }
   };
 
-  const header = useMemo(() => (board ? board.title : "Board"), [board]);
-  const searching = !!search.trim();
-
-  if (loading && !board) {
-    return <Spinner label="Loading board..." />;
-  }
+  if (loading && !board) return <Spinner label="Загрузка доски..." />;
 
   if (error && !board) {
     return (
       <div>
-        <div style={{ color: "#fb7185", fontWeight: 800 }}>Failed to load board</div>
-        <div style={{ color: "#94a3b8", marginTop: 8 }}>{String(error)}</div>
-        <div style={{ marginTop: 12 }}>
-          <button onClick={() => dispatch(fetchBoardThunk(boardId))}>Retry</button>
-          <button style={{ marginLeft: 10 }} onClick={() => navigate("/boards")}>
-            Back
-          </button>
+        <div style={{ color: "#ef4444", fontWeight: 900 }}>Не удалось загрузить доску</div>
+        <div style={{ marginTop: 8, color: "#6b7280" }}>{String(error)}</div>
+        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
+          <Button onClick={() => dispatch(fetchBoardThunk(boardId))}>Повторить</Button>
+          <Button variant="primary" onClick={() => navigate("/boards")}>Назад</Button>
         </div>
       </div>
     );
   }
 
+  const searching = !!search.trim();
+
   return (
     <div>
-      <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "end", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div>
           <div style={{ fontWeight: 900, fontSize: 22 }}>{header}</div>
-          <div style={{ color: "#94a3b8", fontSize: 12 }}>
-            {searching ? "Search mode: drag is disabled." : "Click a card to open details. Drag to move."}
+          <div style={{ fontSize: 12, color: "#6b7280" }}>
+            {searching ? "Режим поиска: drag отключён" : "Перетаскивай карточки как в Trello"}
           </div>
         </div>
 
         <div style={{ display: "flex", gap: 10, alignItems: "end", flexWrap: "wrap" }}>
           <div style={{ width: 240 }}>
-            <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6 }}>Search</div>
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="title / phone / email" />
+            <Input label="Поиск" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="title / phone / email" />
           </div>
 
           {isLead && (
             <>
               <div style={{ width: 220 }}>
-                <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6 }}>New column</div>
-                <input value={newColTitle} onChange={(e) => setNewColTitle(e.target.value)} placeholder="To do" />
+                <Input label="Новая колонка" value={newColTitle} onChange={(e) => setNewColTitle(e.target.value)} placeholder="To do" />
               </div>
-              <button disabled={!newColTitle.trim()} onClick={onAddColumn}>
-                Add
-              </button>
+              <Button variant="primary" disabled={!newColTitle.trim()} onClick={onAddColumn}>Добавить</Button>
 
               <div style={{ width: 220 }}>
-                <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 6 }}>Add member (userId)</div>
-                <input value={memberUserId} onChange={(e) => setMemberUserId(e.target.value)} placeholder="cuid..." />
+                <Input label="Добавить участника (userId)" value={memberUserId} onChange={(e) => setMemberUserId(e.target.value)} placeholder="cuid..." />
               </div>
-              <button disabled={addingMember || !memberUserId.trim()} onClick={onAddMember}>
+              <Button disabled={addingMember || !memberUserId.trim()} onClick={onAddMember}>
                 {addingMember ? "..." : "Invite"}
-              </button>
+              </Button>
             </>
           )}
 
-          <button onClick={() => navigate("/boards")}>Boards</button>
+          <Button onClick={() => navigate("/boards")}>Доски</Button>
         </div>
       </div>
 
       {loading && board && (
-        <div style={{ marginBottom: 10 }}>
-          <Spinner label="Syncing..." />
+        <div style={{ marginTop: 10 }}>
+          <Spinner label="Синхронизация..." />
         </div>
       )}
-      {error && board && <div style={{ color: "#fb7185", marginBottom: 10 }}>{String(error)}</div>}
+      {error && board && <div style={{ marginTop: 10, color: "#ef4444" }}>{String(error)}</div>}
 
-      <DragDropContext onDragEnd={onDragEnd}>
-        <Droppable droppableId="board-columns" direction="horizontal" type="COLUMN">
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 10 }}
-            >
-              {(columns || []).map((col, colIndex) => (
-                <Draggable key={col.id} draggableId={col.id} index={colIndex} isDragDisabled={!isLead || searching}>
-                  {(p) => (
-                    <div ref={p.innerRef} {...p.draggableProps} style={{ ...p.draggableProps.style }}>
-                      <Column
-                        column={col}
-                        cards={cardsByColumn[col.id] || []}
-                        searching={searching}
-                        search={search}
-                        isLead={isLead}
-                        columnDragHandleProps={p.dragHandleProps}
-                        onOpenCard={(id) => dispatch(openCard(id))}
-                        onAddCard={(title) => dispatch(createCardThunk({ columnId: col.id, payload: { title } }))}
-                        onRename={(title) => dispatch(updateColumnThunk({ id: col.id, title }))}
-                        onDelete={() => dispatch(deleteColumnThunk(col.id))}
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <div style={{ marginTop: 14, overflowX: "auto", paddingBottom: 10 }}>
+        <DragDropContext onDragEnd={searching ? () => {} : onDragEnd}>
+          <div style={{ display: "flex", gap: 14, minHeight: 160 }}>
+            {(columns || []).map((col, colIndex) => (
+              <Column
+                key={col.id}
+                column={col}
+                index={colIndex}
+                isLead={isLead}
+                searching={searching}
+                search={search}
+                cards={cardsByColumn[col.id] || []}
+                onMoveLeft={() => moveColumnByButtons(colIndex, colIndex - 1)}
+                onMoveRight={() => moveColumnByButtons(colIndex, colIndex + 1)}
+                onRename={(title) => dispatch(updateColumnThunk({ id: col.id, title }))}
+                onDelete={() => dispatch(deleteColumnThunk(col.id))}
+                onAddCard={(title) => dispatch(createCardThunk({ columnId: col.id, payload: { title } }))}
+                onOpenCard={(id) => dispatch(openCard(id))}
+              />
+            ))}
+          </div>
+        </DragDropContext>
+      </div>
 
       {activeCardId && <CardModal cardId={activeCardId} onClose={() => dispatch(closeCard())} />}
     </div>
@@ -261,18 +236,21 @@ export default function Board() {
 
 function Column({
   column,
-  cards,
+  index,
+  isLead,
   searching,
   search,
-  isLead,
-  columnDragHandleProps,
-  onOpenCard,
-  onAddCard,
+  cards,
+  onMoveLeft,
+  onMoveRight,
   onRename,
   onDelete,
+  onAddCard,
+  onOpenCard,
 }) {
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(column.title);
 
@@ -288,7 +266,7 @@ function Column({
     if (!t) return;
     const res = await onAddCard(t);
     if (res?.meta?.requestStatus === "rejected") {
-      toast(res.payload || "Create card failed", "error");
+      toast(res.payload || "Не удалось создать карточку", "error");
       return;
     }
     setNewTitle("");
@@ -301,122 +279,107 @@ function Column({
     if (!t) return;
     const res = await onRename(t);
     if (res?.meta?.requestStatus === "rejected") {
-      toast(res.payload || "Rename failed", "error");
+      toast(res.payload || "Не удалось переименовать", "error");
       return;
     }
     setEditing(false);
+    toast("Название изменено", "ok");
+  };
+
+  const del = () => {
+    if (!isLead) return;
+    const ok = window.confirm("Удалить колонку? Сервер удалит только пустую колонку.");
+    if (!ok) return;
+    Promise.resolve(onDelete()).then((res) => {
+      if (res?.meta?.requestStatus === "rejected") toast(res.payload || "Не удалось удалить", "error");
+      else toast("Колонка удалена", "ok");
+    });
   };
 
   return (
     <div
       style={{
-        minWidth: 300,
-        maxWidth: 320,
-        borderRadius: 16,
-        border: "1px solid rgba(148,163,184,0.18)",
-        background: "rgba(15,23,42,0.52)",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+        minWidth: 320,
+        maxWidth: 340,
+        background: "#fff",
+        border: "1px solid rgba(17,24,39,0.10)",
+        borderRadius: 14,
         padding: 12,
+        boxShadow: "0 12px 30px rgba(0,0,0,0.06)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center", marginBottom: 10 }}>
         {!editing ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            <div
-              {...(isLead ? columnDragHandleProps : {})}
-              title={isLead ? "Drag to reorder columns" : ""}
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 8,
-                display: "grid",
-                placeItems: "center",
-                border: "1px solid rgba(148,163,184,0.18)",
-                color: "#94a3b8",
-                cursor: isLead && !searching ? "grab" : "default",
-                userSelect: "none",
-              }}
-            >
-              ⋮⋮
-            </div>
-
-            <button
-              onDoubleClick={() => {
-                if (isLead) setEditing(true);
-              }}
-              style={{
-                textAlign: "left",
-                padding: 0,
-                border: "none",
-                background: "transparent",
-                fontWeight: 900,
-                fontSize: 14,
-                cursor: "default",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                minWidth: 0,
-              }}
-              title={isLead ? "Double-click to rename" : ""}
-            >
-              {column.title}
-              <span style={{ color: "#94a3b8", fontWeight: 600, marginLeft: 8, fontSize: 12 }}>
-                ({visibleCards.length}{searching ? `/${cards.length}` : ""})
-              </span>
-            </button>
-          </div>
+          <button
+            onDoubleClick={() => isLead && setEditing(true)}
+            style={{
+              border: "none",
+              background: "transparent",
+              padding: 0,
+              textAlign: "left",
+              cursor: "default",
+              fontWeight: 900,
+              fontSize: 16,
+              minWidth: 0,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            title={isLead ? "Двойной клик — переименовать" : ""}
+          >
+            {column.title}
+            <span style={{ marginLeft: 8, color: "#6b7280", fontWeight: 700, fontSize: 12 }}>
+              ({visibleCards.length}{searching ? `/${cards.length}` : ""})
+            </span>
+          </button>
         ) : (
           <div style={{ display: "flex", gap: 8, width: "100%" }}>
             <input value={title} onChange={(e) => setTitle(e.target.value)} />
-            <button onClick={saveTitle}>Save</button>
-            <button onClick={() => setEditing(false)}>Cancel</button>
+            <Button variant="primary" onClick={saveTitle}>Ок</Button>
+            <Button onClick={() => setEditing(false)}>X</Button>
           </div>
         )}
 
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => setAdding((v) => !v)} title="Add card">
-            +
-          </button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {isLead && (
-            <button
-              onClick={() => {
-                const ok = window.confirm("Delete this column? (Only works if the column is empty)");
-                if (!ok) return;
-                Promise.resolve(onDelete()).then((res) => {
-                  if (res?.meta?.requestStatus === "rejected") {
-                    toast(res.payload || "Delete failed", "error");
-                  } else {
-                    toast("Column deleted", "ok");
-                  }
-                });
-              }}
-              title="Delete column"
-              style={{ color: "#fb7185" }}
-            >
-              ×
-            </button>
+            <>
+              <Button onClick={onMoveLeft} title="Влево" style={{ padding: "8px 10px" }}>←</Button>
+              <Button onClick={onMoveRight} title="Вправо" style={{ padding: "8px 10px" }}>→</Button>
+              <Button onClick={del} title="Удалить" style={{ padding: "8px 10px", color: "#ef4444" }}>✕</Button>
+            </>
           )}
+          <Button onClick={() => setAdding((v) => !v)} title="Добавить карточку" style={{ padding: "8px 10px" }}>+</Button>
         </div>
       </div>
 
       {adding && (
         <div style={{ display: "grid", gap: 8, marginBottom: 10 }}>
-          <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Card title" />
+          <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Название карточки" />
           <div style={{ display: "flex", gap: 8 }}>
-            <button disabled={!newTitle.trim()} onClick={add}>
-              Add card
-            </button>
-            <button onClick={() => setAdding(false)}>Cancel</button>
+            <Button variant="primary" disabled={!newTitle.trim()} onClick={add}>Добавить</Button>
+            <Button onClick={() => setAdding(false)}>Отмена</Button>
           </div>
         </div>
       )}
 
-      <Droppable droppableId={column.id} type="CARD" isDropDisabled={searching}>
-        {(provided) => (
-          <div ref={provided.innerRef} {...provided.droppableProps} style={{ display: "grid", gap: 10, minHeight: 20 }}>
+      <Droppable droppableId={column.id} isDropDisabled={searching}>
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            style={{
+              display: "grid",
+              gap: 10,
+              minHeight: 40,
+              padding: 2,
+              borderRadius: 12,
+              background: snapshot.isDraggingOver ? "rgba(37,99,235,0.06)" : "transparent",
+              transition: "background 120ms ease",
+            }}
+          >
             {visibleCards.map((card, idx) => (
               <Draggable key={card.id} draggableId={card.id} index={idx} isDragDisabled={searching}>
-                {(p) => (
+                {(p, s) => (
                   <div
                     ref={p.innerRef}
                     {...p.draggableProps}
@@ -425,10 +388,10 @@ function Column({
                     style={{
                       padding: 12,
                       borderRadius: 14,
-                      border: "1px solid rgba(148,163,184,0.18)",
-                      background: "rgba(17,24,39,0.92)",
-                      cursor: "pointer",
-                      boxShadow: "0 10px 20px rgba(0,0,0,0.22)",
+                      border: "1px solid rgba(17,24,39,0.10)",
+                      background: "#fff",
+                      boxShadow: s.isDragging ? "0 16px 40px rgba(0,0,0,0.12)" : "0 10px 20px rgba(0,0,0,0.06)",
+                      cursor: searching ? "default" : "grab",
                       ...p.draggableProps.style,
                     }}
                   >
@@ -455,11 +418,11 @@ function Tag({ text }) {
     <span
       style={{
         fontSize: 12,
-        color: "#94a3b8",
-        border: "1px solid rgba(148,163,184,0.18)",
+        color: "#6b7280",
+        border: "1px solid rgba(17,24,39,0.10)",
         padding: "2px 8px",
         borderRadius: 999,
-        background: "rgba(255,255,255,0.04)",
+        background: "#f9fafb",
       }}
     >
       {text}

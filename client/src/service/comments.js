@@ -1,6 +1,5 @@
 import { api } from "./http";
 
-// If your server uses different endpoints, change ONLY this file.
 export async function listCommentsApi(cardId) {
   const { data } = await api.get(`/cards/${cardId}/comments`);
   return data;

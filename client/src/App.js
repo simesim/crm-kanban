@@ -3,15 +3,19 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import Layout from "./components/Layout/Layout";
+import ToastHost from "./components/UI/ToastHost";
+import Spinner from "./components/UI/Spinner";
+
 import Login from "./pages/Login/Login";
 import Boards from "./pages/Boards/Boards";
 import Board from "./pages/Board/Board";
 import NotFound from "./pages/NotFound/NotFound";
-import ToastHost from "./components/UI/ToastHost";
+import Disk from "./pages/Disk/Disk";
+import Reviews from "./pages/Reviews/Reviews";
+import Lessons from "./pages/Lessons/Lessons";
 
 import { refreshThunk } from "./store/auth/slice";
 import { selectAuthReady, selectIsAuthed } from "./store/auth/selectors";
-import Spinner from "./components/UI/Spinner";
 
 function Protected({ children }) {
   const authed = useSelector(selectIsAuthed);
@@ -20,7 +24,7 @@ function Protected({ children }) {
   if (!ready) {
     return (
       <div style={{ padding: 18 }}>
-        <Spinner label="Loading session..." />
+        <Spinner label="Подготовка..." />
       </div>
     );
   }
@@ -37,11 +41,10 @@ export default function App() {
     dispatch(refreshThunk());
   }, [dispatch]);
 
-  // keep first paint stable
   if (!ready) {
     return (
       <div style={{ padding: 18 }}>
-        <Spinner label="Starting..." />
+        <Spinner label="Запуск..." />
         <ToastHost />
       </div>
     );
@@ -60,8 +63,13 @@ export default function App() {
           }
         >
           <Route path="/" element={<Navigate to="/boards" replace />} />
+
           <Route path="/boards" element={<Boards />} />
           <Route path="/boards/:boardId" element={<Board />} />
+
+          <Route path="/disk" element={<Disk />} />
+          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/lessons" element={<Lessons />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

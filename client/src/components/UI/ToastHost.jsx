@@ -15,7 +15,7 @@ export default function ToastHost() {
   if (!items.length) return null;
 
   return (
-    <div style={{ position: "fixed", right: 16, bottom: 16, display: "grid", gap: 10, zIndex: 100 }}>
+    <div style={{ position: "fixed", right: 16, bottom: 16, display: "grid", gap: 10, zIndex: 999 }}>
       {items.map((t) => (
         <div
           key={t.id}
@@ -24,13 +24,13 @@ export default function ToastHost() {
             maxWidth: 420,
             padding: "10px 12px",
             borderRadius: 12,
-            background: "rgba(17,24,39,0.92)",
-            border: "1px solid rgba(148,163,184,0.22)",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
+            background: "#111827",
+            color: "#fff",
+            boxShadow: "0 12px 30px rgba(0,0,0,0.15)",
           }}
         >
-          <div style={{ fontSize: 12, color: "#94a3b8", marginBottom: 4 }}>
-            {t.type === "error" ? "Error" : t.type === "ok" ? "OK" : "Info"}
+          <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 4 }}>
+            {t.type === "error" ? "Ошибка" : t.type === "ok" ? "ОК" : "Инфо"}
           </div>
           <div style={{ whiteSpace: "pre-wrap" }}>{t.message}</div>
         </div>

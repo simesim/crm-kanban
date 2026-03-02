@@ -1,6 +1,5 @@
 import { api } from "./http";
 
-// If your server uses different endpoints, change ONLY this file.
 export async function createCardApi(columnId, payload) {
   const { data } = await api.post(`/columns/${columnId}/cards`, payload);
   return data;

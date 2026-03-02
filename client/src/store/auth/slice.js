@@ -38,17 +38,16 @@ export const logoutThunk = createAsyncThunk("auth/logout", async () => {
 });
 
 const stored = getStoredAuth();
-const initialState = {
-  user: stored?.user || null,
-  accessToken: stored?.accessToken || null,
-  loading: false,
-  error: null,
-  ready: false,
-};
 
 const slice = createSlice({
   name: "auth",
-  initialState,
+  initialState: {
+    user: stored?.user || null,
+    accessToken: stored?.accessToken || null,
+    loading: false,
+    error: null,
+    ready: false,
+  },
   reducers: {},
   extraReducers: (b) => {
     b.addCase(refreshThunk.pending, (s) => {
