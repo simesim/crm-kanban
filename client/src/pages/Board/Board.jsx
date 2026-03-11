@@ -169,7 +169,7 @@ export default function Board() {
         <div>
           <div style={{ fontWeight: 900, fontSize: 22 }}>{header}</div>
           <div style={{ fontSize: 12, color: "#6b7280" }}>
-            {searching ? "Режим поиска: drag отключён" : "Перетаскивай карточки как в Trello"}
+            {searching ? "Режим поиска: drag отключён" : "Перетаскиваем карточки как в Trello"}
           </div>
         </div>
 

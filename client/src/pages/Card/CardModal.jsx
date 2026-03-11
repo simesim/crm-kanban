@@ -84,7 +84,6 @@ export default function CardModal({ cardId, onClose }) {
   }, [card]);
 
   useEffect(() => {
-    // auto scroll comments
     if (!commentsBoxRef.current) return;
     commentsBoxRef.current.scrollTop = commentsBoxRef.current.scrollHeight;
   }, [comments.length]);
@@ -108,7 +107,6 @@ export default function CardModal({ cardId, onClose }) {
         try {
           tp = JSON.parse(timePref);
         } catch {
-          // allow plain string
           tp = { text: timePref.trim() };
         }
       }
