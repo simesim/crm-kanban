@@ -46,11 +46,6 @@ export default function CardModal({ cardId, onClose }) {
     source: "",
   });
 
-  const [tagsInput, setTagsInput] = useState("");
-  const [timePref, setTimePref] = useState("");
-  const [checklist, setChecklist] = useState([]);
-  const [newCheck, setNewCheck] = useState("");
-
   const commentsBoxRef = useRef(null);
 
   useEffect(() => {
@@ -69,18 +64,6 @@ export default function CardModal({ cardId, onClose }) {
       course: card.course || "",
       source: card.source || "",
     });
-
-    const tags = Array.isArray(card.tags) ? card.tags : [];
-    setTagsInput(tags.join(", "));
-
-    setTimePref(card.timePreferences ? JSON.stringify(card.timePreferences, null, 2) : "");
-
-    const cl = Array.isArray(card.checklist) ? card.checklist : [];
-    setChecklist(
-      cl
-        .filter((x) => x && typeof x === "object")
-        .map((x) => ({ text: String(x.text || ""), done: !!x.done }))
-    );
   }, [card]);
 
   useEffect(() => {
@@ -97,20 +80,6 @@ export default function CardModal({ cardId, onClose }) {
   const save = async () => {
     setSaving(true);
     try {
-      const tags = tagsInput
-        .split(",")
-        .map((x) => x.trim())
-        .filter(Boolean);
-
-      let tp = null;
-      if (timePref.trim()) {
-        try {
-          tp = JSON.parse(timePref);
-        } catch {
-          tp = { text: timePref.trim() };
-        }
-      }
-
       const payload = {
         title: form.title.trim(),
         description: form.description.trim() ? form.description.trim() : null,
@@ -119,9 +88,6 @@ export default function CardModal({ cardId, onClose }) {
         age: form.age === "" ? null : Number(form.age),
         course: form.course.trim() ? form.course.trim() : null,
         source: form.source.trim() ? form.source.trim() : null,
-        tags,
-        checklist,
-        timePreferences: tp,
       };
 
       const res = await dispatch(updateCardThunk({ id: cardId, payload }));
@@ -170,21 +136,6 @@ export default function CardModal({ cardId, onClose }) {
     else toast(res.payload || "Не удалось удалить", "error");
   };
 
-  const toggleChecklist = (i) => {
-    setChecklist((s) => s.map((x, idx) => (idx === i ? { ...x, done: !x.done } : x)));
-  };
-
-  const removeChecklist = (i) => {
-    setChecklist((s) => s.filter((_, idx) => idx !== i));
-  };
-
-  const addChecklist = () => {
-    const t = newCheck.trim();
-    if (!t) return;
-    setChecklist((s) => [...s, { text: t, done: false }]);
-    setNewCheck("");
-  };
-
   return (
     <div
       onMouseDown={onClose}
@@ -201,7 +152,7 @@ export default function CardModal({ cardId, onClose }) {
       <div
         onMouseDown={(e) => e.stopPropagation()}
         style={{
-          width: "min(1100px, 96vw)",
+          width: "min(980px, 96vw)",
           maxHeight: "90vh",
           overflow: "auto",
           borderRadius: 16,
@@ -214,7 +165,7 @@ export default function CardModal({ cardId, onClose }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <div>
             <div style={{ fontWeight: 900, fontSize: 18 }}>{header}</div>
-            <div style={{ fontSize: 12, color: "#6b7280" }}>Клик вне окна — закрыть</div>
+            <div style={{ fontSize: 12, color: "#6b7280" }}>Сзади остаётся доска, спереди — данные карточки</div>
           </div>
 
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -240,63 +191,33 @@ export default function CardModal({ cardId, onClose }) {
         {!loading && card && (
           <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 380px", gap: 14 }}>
             <section style={{ border: "1px solid rgba(17,24,39,0.10)", borderRadius: 14, padding: 12 }}>
-              <div style={{ fontWeight: 900, marginBottom: 10 }}>Данные заявки</div>
+              <div style={{ fontWeight: 900, marginBottom: 10 }}>Данные карточки</div>
 
-              <Field label="Title">
+              <Field label="Название">
                 <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
               </Field>
 
-              <Field label="Description">
+              <Field label="Описание">
                 <textarea rows={5} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
               </Field>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <Field label="Phone">
+                <Field label="Телефон">
                   <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                 </Field>
                 <Field label="Email">
                   <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 </Field>
-                <Field label="Age">
+                <Field label="Возраст">
                   <input value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} />
                 </Field>
-                <Field label="Course">
+                <Field label="Курс">
                   <input value={form.course} onChange={(e) => setForm({ ...form, course: e.target.value })} />
                 </Field>
               </div>
 
-              <Field label="Source">
+              <Field label="Источник">
                 <input value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
-              </Field>
-
-              <hr style={{ border: "none", borderTop: "1px solid rgba(17,24,39,0.08)", margin: "14px 0" }} />
-
-              <div style={{ fontWeight: 900, marginBottom: 10 }}>CRM поля</div>
-
-              <Field label="Tags (через запятую)">
-                <input value={tagsInput} onChange={(e) => setTagsInput(e.target.value)} placeholder="vip, повтор, срочно" />
-              </Field>
-
-              <Field label="Checklist">
-                <div style={{ display: "grid", gap: 8 }}>
-                  {checklist.length === 0 && <div style={{ fontSize: 12, color: "#6b7280" }}>Пока пусто</div>}
-                  {checklist.map((x, i) => (
-                    <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <input type="checkbox" checked={x.done} onChange={() => toggleChecklist(i)} style={{ width: 16, height: 16 }} />
-                      <div style={{ flex: 1, textDecoration: x.done ? "line-through" : "none" }}>{x.text}</div>
-                      <Button onClick={() => removeChecklist(i)} style={{ padding: "8px 10px", color: "#ef4444" }}>✕</Button>
-                    </div>
-                  ))}
-
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <input value={newCheck} onChange={(e) => setNewCheck(e.target.value)} placeholder="Новый пункт" />
-                    <Button variant="primary" disabled={!newCheck.trim()} onClick={addChecklist}>+</Button>
-                  </div>
-                </div>
-              </Field>
-
-              <Field label="timePreferences (JSON или текст)">
-                <textarea rows={4} value={timePref} onChange={(e) => setTimePref(e.target.value)} placeholder='{"days":["sat"],"time":"10:00"}' />
               </Field>
             </section>
 
@@ -316,10 +237,7 @@ export default function CardModal({ cardId, onClose }) {
                 <div style={{ fontSize: 12, color: "#6b7280" }}>{comments.length}</div>
               </div>
 
-              <div
-                ref={commentsBoxRef}
-                style={{ overflow: "auto", display: "grid", gap: 10, paddingRight: 2 }}
-              >
+              <div ref={commentsBoxRef} style={{ overflow: "auto", display: "grid", gap: 10, paddingRight: 2 }}>
                 {comments.length === 0 && <div style={{ color: "#6b7280" }}>Нет комментариев.</div>}
 
                 {comments.map((c) => (

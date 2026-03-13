@@ -5,7 +5,7 @@ export default function Lessons() {
     <div style={{ maxWidth: 1400, margin: "0 auto" }}>
       <div style={{ fontWeight: 900, fontSize: 22, marginBottom: 8 }}>Ведомость занятий</div>
       <div style={{ color: "#6b7280", fontSize: 12, marginBottom: 12 }}>
-        Что-то примерно такое по стилю ;)
+        Пример страницы по стилю компании. Данные сейчас статические, можно подключить API позже.
       </div>
 
       <div style={{ overflowX: "auto", paddingBottom: 8 }}>
@@ -17,7 +17,7 @@ export default function Lessons() {
       </div>
 
       <div style={{ marginTop: 10, color: "#6b7280", fontSize: 12 }}>
-        Карточки занятий — пример. Если нужны картинки, то под них заложена папка.
+        Карточки занятий — пример. Если нужны картинки: <span className="kbd">/public/assets/logo.svg</span>, <span className="kbd">/public/assets/avatar.svg</span>.
       </div>
     </div>
   );

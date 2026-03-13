@@ -26,7 +26,7 @@ function flushWaiters(error, token) {
   waiters = [];
 }
 
-const raw = axios.create({ baseURL, withCredentials: true, timeout: 150000 });
+const raw = axios.create({ baseURL, withCredentials: true, timeout: 15000 });
 
 api.interceptors.response.use(
   (res) => res,

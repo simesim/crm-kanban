@@ -6,9 +6,9 @@ export default function Disk() {
         Заглушка. Здесь можно хранить ссылки на файлы/материалы компании.
       </div>
       <ul style={{ marginTop: 12, lineHeight: 1.9 }}>
-        <li>по /assets/company-rules.pdf</li>
-        <li>Ссылка на Google Drive</li>
-        <li>Шаблоны отчётов</li>
+        <li>📄 /assets/company-rules.pdf</li>
+        <li>🔗 Ссылка на Google Drive</li>
+        <li>🧾 Шаблоны отчётов</li>
       </ul>
     </div>
   );

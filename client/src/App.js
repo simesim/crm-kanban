@@ -10,9 +10,6 @@ import Login from "./pages/Login/Login";
 import Boards from "./pages/Boards/Boards";
 import Board from "./pages/Board/Board";
 import NotFound from "./pages/NotFound/NotFound";
-import Disk from "./pages/Disk/Disk";
-import Reviews from "./pages/Reviews/Reviews";
-import Lessons from "./pages/Lessons/Lessons";
 
 import { refreshThunk } from "./store/auth/slice";
 import { selectAuthReady, selectIsAuthed } from "./store/auth/selectors";
@@ -63,13 +60,8 @@ export default function App() {
           }
         >
           <Route path="/" element={<Navigate to="/boards" replace />} />
-
           <Route path="/boards" element={<Boards />} />
           <Route path="/boards/:boardId" element={<Board />} />
-
-          <Route path="/disk" element={<Disk />} />
-          <Route path="/reviews" element={<Reviews />} />
-          <Route path="/lessons" element={<Lessons />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
