@@ -5,11 +5,6 @@ export default function Disk() {
       <div style={{ color: "#6b7280" }}>
         Заглушка. Здесь можно хранить ссылки на файлы/материалы компании.
       </div>
-      <ul style={{ marginTop: 12, lineHeight: 1.9 }}>
-        <li>📄 /assets/company-rules.pdf</li>
-        <li>🔗 Ссылка на Google Drive</li>
-        <li>🧾 Шаблоны отчётов</li>
-      </ul>
     </div>
   );
 }

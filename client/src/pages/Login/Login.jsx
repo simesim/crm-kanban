@@ -70,7 +70,7 @@ export default function Login() {
           {error && <div style={{ color: "#ef4444" }}>{String(error)}</div>}
 
           <div style={{ fontSize: 12, color: "#6b7280", marginTop: 6, lineHeight: 1.5 }}>
-            Тестовые данные (если ты создала их в базе):
+            Тестовые данные:
             <div style={{ marginTop: 6 }}>
               <span className="kbd">lead@test.com</span> / <span className="kbd">123456</span>
             </div>

@@ -3,7 +3,7 @@ export default function Reviews() {
     <div style={{ maxWidth: 980, margin: "0 auto" }}>
       <div style={{ fontWeight: 900, fontSize: 22, marginBottom: 8 }}>Отзывы</div>
       <div style={{ color: "#6b7280" }}>
-        Заглушка. Можно подключить API и выводить отзывы учеников/клиентов.
+        Заглушка. Можно подключить API и выводить отзывы родителей детей.
       </div>
 
       <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
