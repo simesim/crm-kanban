@@ -5,6 +5,7 @@ import { roleMiddleware } from "../middlewares/role.middleware.js";
 import { boardAccessMiddleware } from "../middlewares/board-access.middleware.js";
 import { ROLES } from "../constants/roles.js";
 
+
 export const boardsRouter = Router();
 
 boardsRouter.use(authMiddleware);

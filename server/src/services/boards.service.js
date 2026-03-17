@@ -45,11 +45,25 @@ export const boardsService = {
     });
   },
 
-  async addMember({ boardId, userIdToAdd }) {
 
+  async getBoardKanban(boardId) {
+    return prisma.board.findUnique({
+      where: { id: boardId },
+      include: {
+        columns: {
+          orderBy: { order: "asc" },
+          include: {
+            cards: { orderBy: { order: "asc" } },
+          },
+        },
+      },
+    });
+  },
+
+  async addMember({ boardId, userIdToAdd }) {
     const user = await prisma.user.findUnique({
       where: { id: userIdToAdd },
-      select: { id: true },
+      select: { id: true, role: true },
     });
     if (!user) throw ApiError.badRequest("User to add not found");
 
@@ -64,6 +78,8 @@ export const boardsService = {
       create: {
         boardId,
         userId: userIdToAdd,
+        // Keep BoardMember.role aligned with account role
+        role: user.role,
       },
     });
   },

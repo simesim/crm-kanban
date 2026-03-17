@@ -26,7 +26,7 @@ export const boardsController = {
   async getById(req, res, next) {
     try {
       const boardId = req.params.id;
-      const board = await boardsService.getBoardById(boardId);
+      const board = await boardsService.getBoardKanban(boardId);
       return res.json(board);
     } catch (e) {
       return next(e);
